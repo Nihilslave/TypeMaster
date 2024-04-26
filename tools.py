@@ -19,8 +19,8 @@ LOGGER = Logger()
 def printDict(d):
     if isinstance(d, dict):
         d = d.items()
-    for key, value in d:
-        print(f"{key}: {value}")
+    for i, (key, value) in enumerate(d):
+        print(f"{i + 1}. {key}: {value}")
 
 def typechart(n, typeComb, hideDetailsAbove=None):
     typeComb = TypeComb(typeComb)
