@@ -98,11 +98,38 @@ class TypeComb:
     def supeffto(self, t: Union[str, Type, 'TypeComb']):
         return any(t.weakto(_) for _ in self.typelist)
     def resistedby(self, t: Union[str, Type, 'TypeComb']):
-        return any(t.resists(_) for _ in self.typelist)
+        return all(t.resists(_) for _ in self.typelist)
     def ineffagainst(self, t: Union[str, Type, 'TypeComb']):
-        return any(t.immuneto(_) for _ in self.typelist)
+        return all(t.immuneto(_) for _ in self.typelist)
+
+class Team:
+    def __init__(self):
+        self.tclist: list[TypeComb] = []
+    def add(self, typeComb: Union[str, list, Type, TypeComb]):
+        if len(self.tclist) >= 6:
+            raise IndexError('Already 6 or more Pokemon in this team!')
+        self.tclist.append(TypeComb(typeComb))
+        return self
+    def getcoeff(self, t: Union[str, Type, TypeComb]):
+        return min(tc.getcoeff(t) for tc in self.tclist)
+    def weakto(self, t: Union[str, Type, TypeComb]):
+        return (self.getcoeff(t) > 0)
+    def resists(self, t: Union[str, Type, TypeComb]):
+        return (self.getcoeff(t) < 0 and self.getcoeff(t) > -4)
+    def immuneto(self, t: Union[str, Type, TypeComb]):
+        return (self.getcoeff(t) <= -4)
+    def supeffto(self, t: Union[str, Type, TypeComb]):
+        return any(tc.supeffto(t) for tc in self.tclist)
+    def resistedby(self, t: Union[str, Type, TypeComb]):
+        return all(tc.resistedby(t) for tc in self.tclist)
+    def ineffagainst(self, t: Union[str, Type, TypeComb]):
+        return all(tc.ineffagainst(t) for tc in self.tclist)
 
 if __name__ == '__main__':
     print(TypeComb([STEEL, FAIRY]).weakto(TypeComb([BUG, FIGHTING])))
     print(TypeComb([STEEL, FAIRY]).resists(TypeComb([BUG, FLYING])))
     print(TypeComb([STEEL, FAIRY]).resistedby(STEEL))
+    team = Team().add([STEEL, GHOST]).add([STEEL, FLYING]).add([STEEL, DRAGON])
+    for t in TYPES:
+        if team.getcoeff(t) >= 0:
+            print(t)

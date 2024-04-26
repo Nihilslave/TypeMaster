@@ -79,4 +79,4 @@ def findTypeComb(n, predicate):
     return list(filter(predicate, TYPECOMBS(n)))
 
 if __name__ == '__main__':
-    print(findTypeComb(2, lambda typeComb: TypeComb(typeComb).resists(TypeComb([FIRE, GROUND]))))
+    print(findTypeComb(2, lambda tc: TypeComb(tc).resists(TypeComb([FIRE, GROUND]))))
