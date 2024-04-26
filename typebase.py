@@ -126,10 +126,11 @@ class Team:
         return all(tc.ineffagainst(t) for tc in self.tclist)
 
 if __name__ == '__main__':
-    print(TypeComb([STEEL, FAIRY]).weakto(TypeComb([BUG, FIGHTING])))
-    print(TypeComb([STEEL, FAIRY]).resists(TypeComb([BUG, FLYING])))
-    print(TypeComb([STEEL, FAIRY]).resistedby(STEEL))
-    team = Team().add([STEEL, GHOST]).add([STEEL, FLYING]).add([STEEL, DRAGON])
+    # print(TypeComb([STEEL, FAIRY]).weakto(TypeComb([BUG, FIGHTING])))
+    # print(TypeComb([STEEL, FAIRY]).resists(TypeComb([BUG, FLYING])))
+    # print(TypeComb([STEEL, FAIRY]).resistedby(STEEL))
+    team = Team().add([WATER, GROUND]).add([STEEL, FLYING]).add([FAIRY, DRAGON])
     for t in TYPES:
-        if team.getcoeff(t) >= 0:
-            print(t)
+        coeff = team.getcoeff(t)
+        if coeff >= 0:
+            print(f"{t}: {coeff}")
