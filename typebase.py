@@ -1,4 +1,5 @@
 import types
+import itertools
 from typing import Union
 
 from typechart import TYPECHART
@@ -56,6 +57,8 @@ ROCK = Type('rock')
 STEEL = Type('steel')
 WATER = Type('water')
 TYPES = types.MappingProxyType(Type.TYPES)
+def TYPECOMBS(n):
+    return itertools.combinations_with_replacement(TYPES, n)
 
 class TypeComb:
     def __init__(self, typeComb: Union[str, list, Type, 'TypeComb']):

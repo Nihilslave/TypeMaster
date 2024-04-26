@@ -8,16 +8,16 @@ def task_BestTypeCombs(
     weights0 = {}
     weights1 = {}
     # initial weights
-    for typeComb in itertools.combinations_with_replacement(TYPES, n):
+    for typeComb in TYPECOMBS(n):
         typeComb = TypeComb(typeComb)
         weights0[typeComb.ID] = 1
         weights1[typeComb.ID] = 0
     for i in range(1000):
         # calc new weight
-        for typeComb1 in itertools.combinations_with_replacement(TYPES, n):
+        for typeComb1 in TYPECOMBS(n):
             typeComb1 = TypeComb(typeComb1)
             id1 = typeComb1.ID
-            for typeComb2 in itertools.combinations_with_replacement(TYPES, n):
+            for typeComb2 in TYPECOMBS(n):
                 typeComb2 = TypeComb(typeComb2)
                 id2 = typeComb2.ID
                 coeff_def = typeComb1.getcoeff(typeComb2)

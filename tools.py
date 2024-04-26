@@ -26,7 +26,7 @@ def typechart(n, typeComb, hideDetailsAbove=None):
     typeComb = TypeComb(typeComb)
     res1 = {}
     res2: dict[tuple, list] = {}
-    for tc in itertools.combinations_with_replacement(TYPES, n):
+    for tc in TYPECOMBS(n):
         tc = TypeComb(tc)
         coeff_def = typeComb.getcoeff(tc)
         coeff_def = -64 if coeff_def <= -4 else coeff_def
@@ -75,15 +75,8 @@ def printTypechart(typechart: dict[tuple, list], hideDetailsAbove=1):
         LOGGER.log(f"{category}ensiveDelta_{size}: {buf[(category, size)]}")
     return typechart, buf
 
+def findTypeComb(n, predicate):
+    return list(filter(predicate, TYPECOMBS(n)))
+
 if __name__ == '__main__':
-    LOGGER.disable()
-    deltaSums = {}
-    for typeComb in itertools.combinations_with_replacement(TYPES, 2):
-        typeComb = TypeComb(typeComb)
-        _, deltas = typechart(2, typeComb)
-        deltaSum = sum(deltas.values())
-        deltaSums[typeComb.ID] = deltaSum
-    print(len(deltaSums))
-    printDict(sorted(deltaSums.items(), key=lambda item: item[1], reverse=True))
-    LOGGER.enable()
-    typechart(2, [FIRE, GROUND])
+    print(findTypeComb(2, lambda typeComb: TypeComb(typeComb).resists(TypeComb([FIRE, GROUND]))))
