@@ -7,7 +7,7 @@ def task_BestTypeCombs(
         ):
     weights0 = {}
     weights1 = {}
-    # initial weights
+    # initialize weights
     for typeComb in TYPECOMBS(n):
         typeComb = TypeComb(typeComb)
         weights0[typeComb.ID] = 1
