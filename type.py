@@ -76,29 +76,27 @@ class TypeComb:
         for t in TYPES:
             chart[t.ID] = self.getcoeff(t)
         return chart
-    def getcoeff(self, t: Union[str, 'Type']):
+    def getcoeff(self, t: Union[str, Type, 'TypeComb']):
+        if isinstance(t, TypeComb):
+            return max(self.getcoeff(_) for _ in t.typelist)
         coeff = 0
         for _ in self.typelist:
             coeff += _.getcoeff(t)
         return coeff
-    def weakto(self, t: Union[str, 'Type']): # TODO: support TypeComb
+    def weakto(self, t: Union[str, Type, 'TypeComb']): # TODO: support TypeComb
         return (self.getcoeff(t) > 0)
-    def resists(self, t: Union[str, 'Type']):
+    def resists(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) < 0 and self.getcoeff(t) > -4)
-    def immuneto(self, t: Union[str, 'Type']):
+    def immuneto(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) <= -4)
-    def supeffto(self, t: Union[str, 'Type']):
-        t = Type.toType(t)
-        return t.weakto(self)
-    def resistedby(self, t: Union[str, 'Type']):
-        t = Type.toType(t)
-        return t.resists(self)
-    def ineffagainst(self, t: Union[str, 'Type']):
-        t = Type.toType(t)
-        return t.immuneto(self)
+    def supeffto(self, t: Union[str, Type]):
+        return any(t.weakto(_) for _ in self.typelist)
+    def resistedby(self, t: Union[str, Type]):
+        return any(t.resists(_) for _ in self.typelist)
+    def ineffagainst(self, t: Union[str, Type]):
+        return any(t.immuneto(_) for _ in self.typelist)
 
 if __name__ == '__main__':
-    tmp = TypeComb([STEEL, FAIRY])
-    print(tmp.weakto(FIRE))
-    print(tmp.weakto(FIGHTING))
-    print(tmp.immuneto(POISON))
+    print(TypeComb([STEEL, FAIRY]).weakto(TypeComb([BUG, FIGHTING])))
+    print(TypeComb([STEEL, FAIRY]).resists(TypeComb([BUG, FLYING])))
+    print(TypeComb([STEEL, FAIRY]).resistedby(STEEL))
