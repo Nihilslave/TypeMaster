@@ -79,6 +79,25 @@ def task_BestTeamTypeCombs(n, m):
                 res[team.ID] -= 4 * weight
     return res
 
+def task_BestTeamTypeCombs_debug():
+    weights = task_BestTypeCombs(2)
+    team = Team().add([WATER, GROUND]).add([DRAGON, FAIRY]).add([FLYING, STEEL])
+    res = 0;
+    for tc, weight in weights.items():
+        coeff = team.getcoeff(TypeComb(tc))
+        if coeff < -2:
+            res += 4 * weight
+        if coeff == -2:
+            res += 3 * weight
+        if coeff == -1:
+            res += 2 * weight
+        if coeff == 1:
+            res -= 2 * weight
+        if coeff == 2:
+            res -= 4 * weight
+    return res
+
 if __name__ == '__main__':
-    res = task_BestTeamTypeCombs(2, 3)
-    printDict(sorted(res.items(), key=lambda item: item[1], reverse=True)[:100])
+    # res = task_BestTeamTypeCombs(2, 3)
+    # printDict(sorted(res.items(), key=lambda item: item[1], reverse=True)[:100])
+    print(task_BestTeamTypeCombs_debug())

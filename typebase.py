@@ -132,8 +132,22 @@ if __name__ == '__main__':
     # print(TypeComb([STEEL, FAIRY]).weakto(TypeComb([BUG, FIGHTING])))
     # print(TypeComb([STEEL, FAIRY]).resists(TypeComb([BUG, FLYING])))
     # print(TypeComb([STEEL, FAIRY]).resistedby(STEEL))
-    team = Team().add([WATER, GROUND]).add([STEEL, FLYING]).add([FAIRY, DRAGON])
-    for t in TYPES:
-        coeff = team.getcoeff(t)
-        if coeff >= 0:
-            print(f"{t}: {coeff}")
+    teams = [
+        Team().add([DARK, STEEL]).add([DRAGON, FAIRY]).add([FLYING, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([GHOST, WATER]).add([NORMAL, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([FIRE, FLYING]),
+        Team().add([DARK, STEEL]).add([DRAGON, GHOST]).add([FLYING, STEEL]),
+        Team().add([DRAGON, GHOST]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([FLYING, WATER]).add([NORMAL, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([FLYING, STEEL]).add([NORMAL, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([GHOST, WATER]),
+        Team().add([DARK, DRAGON]).add([FLYING, WATER]).add([GHOST, STEEL]),
+    ]
+    for i, team in enumerate(teams):
+        print(f"{i + 1}. {team.ID} weakto:")
+        for tc in TYPECOMBS(2):
+            tc = TypeComb(tc)
+            coeff = team.getcoeff(tc)
+            if coeff > 0:
+                print(f"{tc.ID}: {coeff}")
