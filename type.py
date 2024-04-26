@@ -83,17 +83,17 @@ class TypeComb:
         for _ in self.typelist:
             coeff += _.getcoeff(t)
         return coeff
-    def weakto(self, t: Union[str, Type, 'TypeComb']): # TODO: support TypeComb
+    def weakto(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) > 0)
     def resists(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) < 0 and self.getcoeff(t) > -4)
     def immuneto(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) <= -4)
-    def supeffto(self, t: Union[str, Type]):
+    def supeffto(self, t: Union[str, Type, 'TypeComb']):
         return any(t.weakto(_) for _ in self.typelist)
-    def resistedby(self, t: Union[str, Type]):
+    def resistedby(self, t: Union[str, Type, 'TypeComb']):
         return any(t.resists(_) for _ in self.typelist)
-    def ineffagainst(self, t: Union[str, Type]):
+    def ineffagainst(self, t: Union[str, Type, 'TypeComb']):
         return any(t.immuneto(_) for _ in self.typelist)
 
 if __name__ == '__main__':
