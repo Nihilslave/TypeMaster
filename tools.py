@@ -2,12 +2,19 @@ import itertools
 
 from typebase import *
 
-DO_PRINT = True
+class Logger:
+    def __init__(self):
+        self.enabled = True
+    def enable(self):
+        self.enabled = True
+    def disable(self):
+        self.enabled = False
+    def log(self, *args, **kwargs):
+        if self.enabled is False:
+            return
+        print(*args, **kwargs)
 
-def log(*args, **kwargs):
-    if DO_PRINT is False:
-        return
-    print(*args, **kwargs)
+LOGGER = Logger()
 
 def printDict(d):
     if isinstance(d, dict):
@@ -61,15 +68,15 @@ def printTypechart(typechart: dict[tuple, list], hideDetailsAbove=1):
             .replace('off_-64', 'ineffective')\
             .replace('off_1', 'supereffective2x')\
             .replace('off_2', 'supereffective4x')
-        log(f"{key}: {value}")
+        LOGGER.log(f"{key}: {value}")
     for (category, size) in sorted(buf.keys()):
         if category == 'def':
             buf[(category, size)] *= -1
-        log(f"{category}ensiveDelta_{size}: {buf[(category, size)]}")
+        LOGGER.log(f"{category}ensiveDelta_{size}: {buf[(category, size)]}")
     return typechart, buf
 
 if __name__ == '__main__':
-    DO_PRINT = False
+    LOGGER.disable()
     deltaSums = {}
     for typeComb in itertools.combinations_with_replacement(TYPES, 2):
         typeComb = TypeComb(typeComb)
@@ -78,5 +85,5 @@ if __name__ == '__main__':
         deltaSums[typeComb.ID] = deltaSum
     print(len(deltaSums))
     printDict(sorted(deltaSums.items(), key=lambda item: item[1], reverse=True))
-    DO_PRINT = True
+    LOGGER.enable()
     typechart(2, [FIRE, GROUND])
