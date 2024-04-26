@@ -105,6 +105,9 @@ class TypeComb:
 class Team:
     def __init__(self):
         self.tclist: list[TypeComb] = []
+    @property
+    def ID(self):
+        return ';'.join(sorted(map(lambda tc: tc.ID, self.tclist)))
     def add(self, typeComb: Union[str, list, Type, TypeComb]):
         if len(self.tclist) >= 6:
             raise IndexError('Already 6 or more Pokemon in this team!')

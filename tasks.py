@@ -56,7 +56,29 @@ def task_BestTypeCombs(
             weights0[key] = weights1[key]
             weights1[key] = 0
 
+def task_BestTeamTypeCombs(n, m):
+    weights = task_BestTypeCombs(n)
+    res = {}
+    for tcs in itertools.combinations(TYPECOMBS(n), m):
+        team = Team()
+        for tc in tcs:
+            team.add(tc)
+        print(team.ID)
+        res[team.ID] = 0
+        for tc, weight in weights.items():
+            coeff = team.getcoeff(TypeComb(tc))
+            if coeff < -2:
+                res[team.ID] += 4 * weight
+            if coeff == -2:
+                res[team.ID] += 3 * weight
+            if coeff == -1:
+                res[team.ID] += 2 * weight
+            if coeff == 1:
+                res[team.ID] -= 2 * weight
+            if coeff == 2:
+                res[team.ID] -= 4 * weight
+    return res
 
 if __name__ == '__main__':
-    res = task_BestTypeCombs(2)
-    printDict(sorted(res.items(), key=lambda item: item[1], reverse=True))
+    res = task_BestTeamTypeCombs(2, 3)
+    printDict(sorted(res.items(), key=lambda item: item[1], reverse=True)[:100])
