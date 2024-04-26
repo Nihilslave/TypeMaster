@@ -9,6 +9,12 @@ def log(*args, **kwargs):
         return
     print(*args, **kwargs)
 
+def printDict(d):
+    if isinstance(d, dict):
+        d = d.items()
+    for key, value in d:
+        print(f"{key}: {value}")
+
 def typechart(n, typeComb, hideDetailsAbove=None):
     typeComb = TypeComb(typeComb)
     res1 = {}
@@ -71,4 +77,6 @@ if __name__ == '__main__':
         deltaSum = sum(deltas.values())
         deltaSums[typeComb.ID] = deltaSum
     print(len(deltaSums))
-    print(sorted(deltaSums.items(), key=lambda item: item[1], reverse=True))
+    printDict(sorted(deltaSums.items(), key=lambda item: item[1], reverse=True))
+    DO_PRINT = True
+    typechart(2, [FIRE, GROUND])
