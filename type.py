@@ -27,9 +27,9 @@ class Type:
     def weakto(self, t: Union[str, 'Type']):
         return (self.getcoeff(t) == 1)
     def resists(self, t: Union[str, 'Type']):
-        return (self.getcoeff(t) == 2)
+        return (self.getcoeff(t) == -1)
     def immuneto(self, t: Union[str, 'Type']):
-        return (self.getcoeff(t) == 3)
+        return (self.getcoeff(t) == -64)
     def supeffto(self, t: Union[str, 'Type']):
         return Type(t).weakto(self)
     def resistedby(self, t: Union[str, 'Type']):
@@ -57,36 +57,36 @@ STEEL = Type('steel')
 WATER = Type('water')
 TYPES = types.MappingProxyType(Type.TYPES)
 
-
 class TypeComb:
-    def __init__(self, typeComb: Union[str, list, 'TypeComb']):
+    def __init__(self, typeComb: Union[str, list, Type, 'TypeComb']):
         if isinstance(typeComb, TypeComb):
-            self.typelist = typeComb.typelist[:]
-        elif isinstance(typeComb, list):
-            self.typelist = [Type.toType(t) for t in typeComb]
-        else:
-            self.typelist = [Type.toType(t.strip()) for t in typeComb.split(',')]
+            typeComb = typeComb.typelist
+        elif isinstance(typeComb, str):
+            typeComb = [t.strip() for t in typeComb.split(',')]
+        elif isinstance(typeComb, Type):
+            typeComb = [typeComb]
+        self.typelist = [Type(t) for t in typeComb]
         self.typelist.sort(key=lambda t: t.ID)
     @property
     def ID(self):
         return ','.join(t.ID for t in self.typelist)
-    def weakto(self, t: Union[str, 'Type']): # TODO: support TypeComb
+    @property
+    def chart(self):
+        chart = {}
+        for t in TYPES:
+            chart[t.ID] = self.getcoeff(t)
+        return chart
+    def getcoeff(self, t: Union[str, 'Type']):
         coeff = 0
         for _ in self.typelist:
-            _Coeff = _.getcoeff(t)
-            if _Coeff == 3:
-                return 0
-            if _Coeff == 2:
-                coeff -= 1
-            if _Coeff == 1:
-                coeff += 1
+            coeff += _.getcoeff(t)
         return coeff
+    def weakto(self, t: Union[str, 'Type']): # TODO: support TypeComb
+        return (self.getcoeff(t) > 0)
     def resists(self, t: Union[str, 'Type']):
-        t = Type.toID(t)
-        return (self.chart.get(t, -1) == 2)
+        return (self.getcoeff(t) < 0 and self.getcoeff(t) > -4)
     def immuneto(self, t: Union[str, 'Type']):
-        t = Type.toID(t)
-        return (self.chart.get(t, -1) == 3)
+        return (self.getcoeff(t) <= -4)
     def supeffto(self, t: Union[str, 'Type']):
         t = Type.toType(t)
         return t.weakto(self)
@@ -98,5 +98,7 @@ class TypeComb:
         return t.immuneto(self)
 
 if __name__ == '__main__':
-    print(FIRE.ID)
-    print(FIRE.supeffto(STEEL))
+    tmp = TypeComb([STEEL, FAIRY])
+    print(tmp.weakto(FIRE))
+    print(tmp.weakto(FIGHTING))
+    print(tmp.immuneto(POISON))
