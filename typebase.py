@@ -65,7 +65,7 @@ class TypeComb:
             typeComb = [t.strip() for t in typeComb.split(',')]
         elif isinstance(typeComb, Type):
             typeComb = [typeComb]
-        self.typelist = [Type(t) for t in typeComb]
+        self.typelist = list(set(Type(t) for t in typeComb))
         self.typelist.sort(key=lambda t: t.ID)
     @property
     def ID(self):
@@ -76,6 +76,9 @@ class TypeComb:
         for t in TYPES:
             chart[t.ID] = self.getcoeff(t)
         return chart
+    @property
+    def size(self):
+        return len(self.typelist)
     def getcoeff(self, t: Union[str, Type, 'TypeComb']):
         if isinstance(t, TypeComb):
             return max(self.getcoeff(_) for _ in t.typelist)
