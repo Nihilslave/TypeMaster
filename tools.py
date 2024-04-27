@@ -1,5 +1,3 @@
-import itertools
-
 from typebase import *
 
 class Logger:
