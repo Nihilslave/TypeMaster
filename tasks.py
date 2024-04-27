@@ -68,6 +68,19 @@ def task_BestTypeCombs(
             weights0[key] = weights1[key]
             weights1[key] = 0
 
+def task_BestType(n, goodCombOnly=False):
+    weights: dict[str, float] = task_BestTypeCombs(n)
+    res = {}
+    for t in TYPES:
+        res[t] = 0
+    for tc, w in weights.items():
+        if goodCombOnly and w < 0.7:
+            continue
+        tt = tc.split(',')
+        for t in tt:
+            res[t] += w
+    return res
+
 def task_OutclassedTable(category, n):
     cache = f"{TASK_OUTCLASSEDTABLE_CACHE}_{category}_{n}.json"
     if os.path.isfile(cache):
@@ -119,4 +132,4 @@ def task_BestTeamTypeCombs(n, m):
 
 if __name__ == '__main__':
     # printDict(task_OutclassedTable('def', 2))
-    printDict(task_OutclassedTable('off', 2))
+    printDict(task_BestType(2, goodCombOnly=True))
