@@ -2,16 +2,18 @@ import os
 import json
 from tools import *
 
-TASK_BESTTYPECOMBS_CACHE = 'typecombrank.json'
+TASK_BESTTYPECOMBS_CACHE = 'typecombrank'
+TASK_OUTCLASSEDTABLE_CACHE = 'outclassedtable'
 
 def task_BestTypeCombs(
         n,
         normalizer=None, # TODO: have something here
         distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values()))
         ):
-    if os.path.isfile(TASK_BESTTYPECOMBS_CACHE):
+    cache = f"{TASK_BESTTYPECOMBS_CACHE}_{n}.json"
+    if os.path.isfile(cache):
         LOGGER.log("cache exists, loading data from cache...")
-        with open(TASK_BESTTYPECOMBS_CACHE, 'r') as load:
+        with open(cache, 'r') as load:
             return json.load(load)
     weights0 = {}
     weights1 = {}
@@ -58,13 +60,39 @@ def task_BestTypeCombs(
         distance = distancer(weights0, weights1)
         LOGGER.log(f"iteration {i}, distance = {distance}")
         if distance < 0.01:
-            with open(TASK_BESTTYPECOMBS_CACHE, 'w') as save:
+            with open(cache, 'w') as save:
                 json.dump(weights1, save, indent=4)
             return weights1
         # prepare for the next iteration
         for key in weights0.keys():
             weights0[key] = weights1[key]
             weights1[key] = 0
+
+def task_OutclassedTable(category, n):
+    cache = f"{TASK_OUTCLASSEDTABLE_CACHE}_{category}_{n}.json"
+    if os.path.isfile(cache):
+        LOGGER.log("cache exists, loading data from cache...")
+        with open(cache, 'r') as load:
+            return json.load(load)
+    res: dict[str, list] = {}
+    for tc1 in TYPECOMBS(n):
+        tc1 = TypeComb(tc1)
+        res[tc1.ID] = []
+        for tc2 in TYPECOMBS(n):
+            tc2 = TypeComb(tc2)
+            if tc2.ID == tc1.ID:
+                continue
+            if category == 'def':
+                if tc1.defoutclassedby(tc2):
+                    res[tc1.ID].append(tc2.ID)
+            if category == 'off':
+                if tc1.size == 1 and tc1.ID in tc2.ID.split(','):
+                    continue
+                if tc1.offoutclassedby(n, tc2):
+                    res[tc1.ID].append(tc2.ID)
+    with open(cache, 'w') as save:
+        json.dump(res, save, indent=4)
+    return res
 
 def task_BestTeamTypeCombs(n, m):
     weights = task_BestTypeCombs(n)
@@ -90,5 +118,5 @@ def task_BestTeamTypeCombs(n, m):
     return res
 
 if __name__ == '__main__':
-    res = task_BestTypeCombs(2)
-    printDict(res)
+    # printDict(task_OutclassedTable('def', 2))
+    printDict(task_OutclassedTable('off', 2))

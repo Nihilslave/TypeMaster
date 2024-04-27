@@ -101,6 +101,23 @@ class TypeComb:
         return all(t.resists(_) for _ in self.typelist)
     def ineffagainst(self, t: Union[str, Type, 'TypeComb']):
         return all(t.immuneto(_) for _ in self.typelist)
+    def defoutclassedby(self, t: Union[str, Type, 'TypeComb']):
+        t = TypeComb(t)
+        for _ in TYPES:
+            if self.immuneto(_) and t.immuneto(_):
+                continue
+            if self.getcoeff(_) < t.getcoeff(_):
+                return False
+        return True
+    def offoutclassedby(self, n, t: Union[str, Type, 'TypeComb']):
+        t = TypeComb(t)
+        for tc in TYPECOMBS(n):
+            tc = TypeComb(tc)
+            if tc.immuneto(self) and tc.immuneto(t):
+                continue
+            if tc.getcoeff(self) > tc.getcoeff(t):
+                return False
+        return True
 
 class Team:
     def __init__(self):
