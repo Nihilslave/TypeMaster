@@ -109,8 +109,8 @@ class Team:
     def ID(self):
         return ';'.join(sorted(map(lambda tc: tc.ID, self.tclist)))
     def add(self, typeComb: Union[str, list, Type, TypeComb]):
-        if len(self.tclist) >= 6:
-            raise IndexError('Already 6 or more Pokemon in this team!')
+        # if len(self.tclist) >= 6:
+        #     raise IndexError('Already 6 or more Pokemon in this team!')
         self.tclist.append(TypeComb(typeComb))
         return self
     def getcoeff(self, t: Union[str, Type, TypeComb]):
@@ -129,9 +129,6 @@ class Team:
         return all(tc.ineffagainst(t) for tc in self.tclist)
 
 if __name__ == '__main__':
-    # print(TypeComb([STEEL, FAIRY]).weakto(TypeComb([BUG, FIGHTING])))
-    # print(TypeComb([STEEL, FAIRY]).resists(TypeComb([BUG, FLYING])))
-    # print(TypeComb([STEEL, FAIRY]).resistedby(STEEL))
     teams = [
         Team().add([DARK, STEEL]).add([DRAGON, FAIRY]).add([FLYING, STEEL]),
         Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]),

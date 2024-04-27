@@ -1,10 +1,18 @@
+import os
+import json
 from tools import *
+
+TASK_BESTTYPECOMBS_CACHE = 'typecombrank.json'
 
 def task_BestTypeCombs(
         n,
         normalizer=None, # TODO: have something here
         distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values()))
         ):
+    if os.path.isfile(TASK_BESTTYPECOMBS_CACHE):
+        LOGGER.log("cache exists, loading data from cache...")
+        with open(TASK_BESTTYPECOMBS_CACHE, 'r') as load:
+            return json.load(load)
     weights0 = {}
     weights1 = {}
     # initialize weights
@@ -48,8 +56,10 @@ def task_BestTypeCombs(
         weights1_mul = len(weights1) / sum(weights1.values())
         weights1 = {k: (v * weights1_mul) for k, v in weights1.items()}
         distance = distancer(weights0, weights1)
-        print(f"iteration {i}, distance = {distance}")
+        LOGGER.log(f"iteration {i}, distance = {distance}")
         if distance < 0.01:
+            with open(TASK_BESTTYPECOMBS_CACHE, 'w') as save:
+                json.dump(weights1, save, indent=4)
             return weights1
         # prepare for the next iteration
         for key in weights0.keys():
@@ -79,25 +89,6 @@ def task_BestTeamTypeCombs(n, m):
                 res[team.ID] -= 4 * weight
     return res
 
-def task_BestTeamTypeCombs_debug():
-    weights = task_BestTypeCombs(2)
-    team = Team().add([WATER, GROUND]).add([DRAGON, FAIRY]).add([FLYING, STEEL])
-    res = 0;
-    for tc, weight in weights.items():
-        coeff = team.getcoeff(TypeComb(tc))
-        if coeff < -2:
-            res += 4 * weight
-        if coeff == -2:
-            res += 3 * weight
-        if coeff == -1:
-            res += 2 * weight
-        if coeff == 1:
-            res -= 2 * weight
-        if coeff == 2:
-            res -= 4 * weight
-    return res
-
 if __name__ == '__main__':
-    # res = task_BestTeamTypeCombs(2, 3)
-    # printDict(sorted(res.items(), key=lambda item: item[1], reverse=True)[:100])
-    print(task_BestTeamTypeCombs_debug())
+    res = task_BestTypeCombs(2)
+    printDict(res)

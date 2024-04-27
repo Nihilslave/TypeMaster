@@ -16,9 +16,13 @@ class Logger:
 
 LOGGER = Logger()
 
-def printDict(d):
-    if isinstance(d, dict):
+def printDict(d: dict, sortByValues=True, reverse=True, firstX=-1):
+    if sortByValues:
+        d = sorted(d.items(), key=lambda item: item[1], reverse=reverse)
+    else:
         d = d.items()
+    if firstX > 0:
+        d = d[:firstX]
     for i, (key, value) in enumerate(d):
         print(f"{i + 1}. {key}: {value}")
 
@@ -79,4 +83,10 @@ def findTypeComb(n, predicate):
     return list(filter(predicate, TYPECOMBS(n)))
 
 if __name__ == '__main__':
-    print(findTypeComb(2, lambda tc: TypeComb(tc).resists(TypeComb([FIRE, GROUND]))))
+    team = Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]).add([GRASS, STEEL]).add([DARK, GRASS]).add([GHOST, STEEL])
+    res = findTypeComb(2, lambda tc: team.getcoeff(TypeComb(tc)) == 0)
+    for t in TYPES:
+        print(t)
+        for tc in res:
+            if t in tc:
+                print(tc)
