@@ -160,8 +160,21 @@ def task_BestTeamTypeCombs2(tcs):
             res += 4 * weight
     return team.ID, res
 
-def BestTeamTypeCombs(n, m, multiProcessing=False):
+def BestTeamTypeCombs(n, m, multiProcessing=True):
     return dict(team_looper(n, m, task_BestTeamTypeCombs2, multiProcessing=multiProcessing))
+
+def task_TypeCombsThatResistsEverything(tcs):
+    team = Team()
+    for tc in tcs:
+        team.add(tc)
+    for t in TYPES:
+        if team.getcoeff(t) >= 0:
+            return team.ID, False
+    return team.ID, True
+
+def TypeCombsThatResistsEverything(n, m, multiProcessing=True):
+    res = team_looper(n, m, task_TypeCombsThatResistsEverything, multiProcessing=multiProcessing)
+    return [_[0] for _ in res if _[1]]
 
 def gen_task_results():
     task_BestTypeCombs(2)
@@ -170,5 +183,8 @@ def gen_task_results():
 
 if __name__ == '__main__':
     gen_task_results()
-    # BestTeamTypeCombs(2, 3, multiProcessing=False) # about 617 seconds
-    printDict(BestTeamTypeCombs(2, 3, multiProcessing=True), firstX=100) # about 83 seconds
+    tmp = TypeCombsThatResistsEverything(2, 3)
+    with open('tmp.json', 'r') as t:
+        table = json.load(t)
+    table = {k: v for k, v in table.items() if k in tmp}
+    printDict(table, firstX=10)
