@@ -145,7 +145,7 @@ def task_BestTeamTypeCombs2(tcs):
         roicnt = rescnt + immcnt
         halfsize = team.size / 2
 
-        res -= weak4xcnt * 4 * weight
+        res -= weak4xcnt * 2 * weight
         if weakcnt == 3:
             res -= 4 * weight
         if weakcnt == 2:
