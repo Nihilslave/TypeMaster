@@ -74,12 +74,11 @@ def typecomb_looper(n, task, *args, multiProcessing=False):
     if multiProcessing:
         with multiprocessing.Pool() as pool:
             result = pool.starmap(task, itertools.product(*map(lambda a: [a], args), TYPECOMBS(n)))
-        return result
     else:
         result = []
         for _ in TYPECOMBS(n):
             result.append(task(*args, _))
-        return result
+    return result
 
 class TypeComb:
     def __init__(self, typeComb: Union[str, list, Type, 'TypeComb']):
@@ -173,12 +172,11 @@ def team_looper(n, m, task, *args, multiProcessing=False):
     if multiProcessing:
         with multiprocessing.Pool() as pool:
             result = pool.starmap(task, itertools.product(*map(lambda a: [a], args), TEAMS(n, m)))
-        return result
     else:
         result = []
         for _ in TEAMS(n, m):
             result.append(task(*args, _))
-        return result
+    return result
 
 if __name__ == '__main__':
     teams = [
