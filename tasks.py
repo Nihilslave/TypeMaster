@@ -68,6 +68,8 @@ def task_BestTypeCombs(
             weights0[key] = weights1[key]
             weights1[key] = 0
 
+TYPECOMB_WEIGHTS = task_BestTypeCombs(2)
+
 def task_BestType(n, goodCombOnly=False):
     weights: dict[str, float] = task_BestTypeCombs(n)
     res = {}
@@ -107,29 +109,33 @@ def task_OutclassedTable(category, n):
         json.dump(res, save, indent=4)
     return res
 
-def task_BestTeamTypeCombs(n, m):
-    weights = task_BestTypeCombs(n)
-    res = {}
-    for tcs in itertools.combinations(TYPECOMBS(n), m):
-        team = Team()
-        for tc in tcs:
-            team.add(tc)
-        print(team.ID)
-        res[team.ID] = 0
-        for tc, weight in weights.items():
-            coeff = team.getcoeff(TypeComb(tc))
-            if coeff < -2:
-                res[team.ID] += 4 * weight
-            if coeff == -2:
-                res[team.ID] += 3 * weight
-            if coeff == -1:
-                res[team.ID] += 2 * weight
-            if coeff == 1:
-                res[team.ID] -= 2 * weight
-            if coeff == 2:
-                res[team.ID] -= 4 * weight
-    return res
+def task_BestTeamTypeCombs(tcs):
+    team = Team()
+    for tc in tcs:
+        team.add(tc)
+    res = 0
+    for tc, weight in TYPECOMB_WEIGHTS.items():
+        coeff = team.getcoeff(TypeComb(tc))
+        if coeff < -2:
+            res += 4 * weight
+        if coeff == -2:
+            res += 3 * weight
+        if coeff == -1:
+            res += 2 * weight
+        if coeff == 1:
+            res -= 2 * weight
+        if coeff == 2:
+            res -= 4 * weight
+    return team.ID, res
+
+def BestTeamTypeCombs(n, m, multiProcessing=False):
+    return dict(team_looper(n, m, task_BestTeamTypeCombs, multiProcessing=multiProcessing))
+
+def gen_task_results():
+    task_BestTypeCombs(2)
+    task_OutclassedTable('def', 2)
+    task_OutclassedTable('off', 2)
 
 if __name__ == '__main__':
-    # printDict(task_OutclassedTable('def', 2))
-    printDict(task_BestType(2, goodCombOnly=True))
+    gen_task_results()
+    printDict(BestTeamTypeCombs(2, 3, multiProcessing=True), firstX=100) # about 83 seconds

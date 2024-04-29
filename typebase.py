@@ -1,6 +1,8 @@
 import types
 import itertools
 from typing import Union
+import time
+import multiprocessing
 
 from typechart import TYPECHART
 
@@ -59,6 +61,25 @@ WATER = Type('water')
 TYPES = types.MappingProxyType(Type.TYPES)
 def TYPECOMBS(n):
     return itertools.combinations_with_replacement(TYPES, n)
+def __timer(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"Function {func.__name__} took {end_time - start_time} seconds to run.")
+        return result
+    return wrapper
+@__timer
+def typecomb_looper(n, task, *args, multiProcessing=False):
+    if multiProcessing:
+        with multiprocessing.Pool() as pool:
+            result = pool.starmap(task, itertools.product(*map(lambda a: [a], args), TYPECOMBS(n)))
+        return result
+    else:
+        result = []
+        for _ in TYPECOMBS(n):
+            result.append(task(*args, _))
+        return result
 
 class TypeComb:
     def __init__(self, typeComb: Union[str, list, Type, 'TypeComb']):
@@ -144,6 +165,20 @@ class Team:
         return all(tc.resistedby(t) for tc in self.tclist)
     def ineffagainst(self, t: Union[str, Type, TypeComb]):
         return all(tc.ineffagainst(t) for tc in self.tclist)
+
+def TEAMS(n, m):
+    return itertools.combinations(TYPECOMBS(n), m)
+@__timer
+def team_looper(n, m, task, *args, multiProcessing=False):
+    if multiProcessing:
+        with multiprocessing.Pool() as pool:
+            result = pool.starmap(task, itertools.product(*map(lambda a: [a], args), TEAMS(n, m)))
+        return result
+    else:
+        result = []
+        for _ in TEAMS(n, m):
+            result.append(task(*args, _))
+        return result
 
 if __name__ == '__main__':
     teams = [
