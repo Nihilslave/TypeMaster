@@ -138,4 +138,5 @@ def gen_task_results():
 
 if __name__ == '__main__':
     gen_task_results()
+    # BestTeamTypeCombs(2, 3, multiProcessing=False) # about 617 seconds
     printDict(BestTeamTypeCombs(2, 3, multiProcessing=True), firstX=100) # about 83 seconds
