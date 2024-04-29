@@ -73,7 +73,7 @@ def __timer(func):
 def typecomb_looper(n, task, *args, multiProcessing=False):
     if multiProcessing:
         with multiprocessing.Pool() as pool:
-            result = pool.starmap(task, itertools.product(*map(lambda a: [a], args), TYPECOMBS(n)))
+            result = pool.starmap(task, itertools.product(TYPECOMBS(n), *map(lambda a: [a], args)))
     else:
         result = []
         for _ in TYPECOMBS(n):
@@ -171,7 +171,7 @@ def TEAMS(n, m):
 def team_looper(n, m, task, *args, multiProcessing=False):
     if multiProcessing:
         with multiprocessing.Pool() as pool:
-            result = pool.starmap(task, itertools.product(*map(lambda a: [a], args), TEAMS(n, m)))
+            result = pool.starmap(task, itertools.product(TEAMS(n, m), *map(lambda a: [a], args)))
     else:
         result = []
         for _ in TEAMS(n, m):
