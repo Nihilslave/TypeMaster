@@ -77,7 +77,7 @@ def typecomb_looper(n, task, *args, multiProcessing=False):
     else:
         result = []
         for _ in TYPECOMBS(n):
-            result.append(task(*args, _))
+            result.append(task(_, *args))
     return result
 
 class TypeComb:
@@ -182,7 +182,7 @@ def team_looper(n, m, task, *args, multiProcessing=False):
     else:
         result = []
         for _ in TEAMS(n, m):
-            result.append(task(*args, _))
+            result.append(task(_, *args))
     return result
 
 if __name__ == '__main__':
