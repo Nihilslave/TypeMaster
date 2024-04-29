@@ -81,8 +81,8 @@ def findTypeComb(n, predicate):
     return list(filter(predicate, TYPECOMBS(n)))
 
 if __name__ == '__main__':
-    team = Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]).add([GRASS, STEEL]).add([DARK, GRASS]).add([GHOST, STEEL])
-    res = findTypeComb(2, lambda tc: team.getcoeff(TypeComb(tc)) == 0)
+    team = Team().add([DRAGON, FAIRY]).add([DRAGON, STEEL]).add([FLYING, STEEL])
+    res = findTypeComb(2, lambda tc: team.getcoeff(TypeComb(tc)) > 0)
     for t in TYPES:
         print(t)
         for tc in res:

@@ -121,6 +121,12 @@ class TypeComb:
         return all(t.resists(_) for _ in self.typelist)
     def ineffagainst(self, t: Union[str, Type, 'TypeComb']):
         return all(t.immuneto(_) for _ in self.typelist)
+    def weaknesses(self):
+        return [t for t in TYPES if self.weakto(t)]
+    def resistances(self):
+        return [t for t in TYPES if self.resists(t)]
+    def immunities(self):
+        return [t for t in TYPES if self.immuneto(t)]
     def defoutclassedby(self, t: Union[str, Type, 'TypeComb']):
         t = TypeComb(t)
         for _ in TYPES:
@@ -145,9 +151,10 @@ class Team:
     @property
     def ID(self):
         return ';'.join(sorted(map(lambda tc: tc.ID, self.tclist)))
+    @property
+    def size(self):
+        return len(self.tclist)
     def add(self, typeComb: Union[str, list, Type, TypeComb]):
-        # if len(self.tclist) >= 6:
-        #     raise IndexError('Already 6 or more Pokemon in this team!')
         self.tclist.append(TypeComb(typeComb))
         return self
     def getcoeff(self, t: Union[str, Type, TypeComb]):
@@ -179,17 +186,27 @@ def team_looper(n, m, task, *args, multiProcessing=False):
     return result
 
 if __name__ == '__main__':
+    print(TypeComb([DRAGON, FAIRY]).weaknesses())
+    print(TypeComb([DRAGON, FAIRY]).resistances())
+    print(TypeComb([DRAGON, FAIRY]).immunities())
+    print(TypeComb([DRAGON, STEEL]).weaknesses())
+    print(TypeComb([DRAGON, STEEL]).resistances())
+    print(TypeComb([DRAGON, STEEL]).immunities())
+    print(TypeComb([FLYING, STEEL]).weaknesses())
+    print(TypeComb([FLYING, STEEL]).resistances())
+    print(TypeComb([FLYING, STEEL]).immunities())
     teams = [
-        Team().add([DARK, STEEL]).add([DRAGON, FAIRY]).add([FLYING, STEEL]),
-        Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
-        Team().add([DRAGON, FAIRY]).add([GHOST, WATER]).add([NORMAL, STEEL]),
-        Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([FIRE, FLYING]),
-        Team().add([DARK, STEEL]).add([DRAGON, GHOST]).add([FLYING, STEEL]),
-        Team().add([DRAGON, GHOST]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
-        Team().add([DRAGON, FAIRY]).add([FLYING, WATER]).add([NORMAL, STEEL]),
-        Team().add([DRAGON, FAIRY]).add([FLYING, STEEL]).add([NORMAL, STEEL]),
-        Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([GHOST, WATER]),
-        Team().add([DARK, DRAGON]).add([FLYING, WATER]).add([GHOST, STEEL]),
+        Team().add([DRAGON, FAIRY]).add([DRAGON, STEEL]).add([FLYING, STEEL]),
+        # Team().add([DARK, STEEL]).add([DRAGON, FAIRY]).add([FLYING, STEEL]),
+        # Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
+        # Team().add([DRAGON, FAIRY]).add([GHOST, WATER]).add([NORMAL, STEEL]),
+        # Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([FIRE, FLYING]),
+        # Team().add([DARK, STEEL]).add([DRAGON, GHOST]).add([FLYING, STEEL]),
+        # Team().add([DRAGON, GHOST]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
+        # Team().add([DRAGON, FAIRY]).add([FLYING, WATER]).add([NORMAL, STEEL]),
+        # Team().add([DRAGON, FAIRY]).add([FLYING, STEEL]).add([NORMAL, STEEL]),
+        # Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([GHOST, WATER]),
+        # Team().add([DARK, DRAGON]).add([FLYING, WATER]).add([GHOST, STEEL]),
     ]
     for i, team in enumerate(teams):
         print(f"{i + 1}. {team.ID} weakto:")

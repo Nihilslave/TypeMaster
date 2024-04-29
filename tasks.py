@@ -1,5 +1,6 @@
 import os
 import json
+
 from tools import *
 
 TASK_BESTTYPECOMBS_CACHE = 'typecombrank'
@@ -128,8 +129,39 @@ def task_BestTeamTypeCombs(tcs):
             res -= 4 * weight
     return team.ID, res
 
+def task_BestTeamTypeCombs2(tcs):
+    team = Team()
+    for tc in tcs:
+        team.add(tc)
+    res = 0
+    for tc, weight in TYPECOMB_WEIGHTS.items():
+        tc = TypeComb(tc)
+        coeffs = sorted(teamtc.getcoeff(TypeComb(tc)) for teamtc in team.tclist)
+        coeffs = [-64 if coeff < -2 else coeff for coeff in coeffs]
+        weak4xcnt, weak2xcnt = coeffs.count(2), coeffs.count(1)
+        weakcnt = weak4xcnt + weak2xcnt
+        res2xcnt, res4xcnt = coeffs.count(-1), coeffs.count(-2)
+        rescnt, immcnt = res2xcnt + res4xcnt, coeffs.count(-64)
+        roicnt = rescnt + immcnt
+        halfsize = team.size / 2
+
+        res -= weak4xcnt * 4 * weight
+        if weakcnt == 3:
+            res -= 4 * weight
+        if weakcnt == 2:
+            res -= 2 * weight
+        if roicnt == 0:
+            res -= weight
+        if roicnt == 1:
+            res += 2 * weight
+        if roicnt == 2:
+            res += 3 * weight
+        if roicnt == 3:
+            res += 4 * weight
+    return team.ID, res
+
 def BestTeamTypeCombs(n, m, multiProcessing=False):
-    return dict(team_looper(n, m, task_BestTeamTypeCombs, multiProcessing=multiProcessing))
+    return dict(team_looper(n, m, task_BestTeamTypeCombs2, multiProcessing=multiProcessing))
 
 def gen_task_results():
     task_BestTypeCombs(2)
