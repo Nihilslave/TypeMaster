@@ -161,6 +161,11 @@ def BestTeamTypeCombs(n, m, multiProcessing=True):
         json.dump(res, save, indent=4)
     return res
 
+def BestTeamTypeCombs_f(n, m, filter):
+    table = BestTeamTypeCombs(n, m)
+    table = {k: v for k, v in table.items() if filter(k, v)}
+    return table
+
 def task_TypeCombsThatResistsEverything(tcs):
     team = Team()
     for tc in tcs:
@@ -182,3 +187,4 @@ def gen_task_results():
 
 if __name__ == '__main__':
     gen_task_results()
+    printDict(BestTeamTypeCombs_f(2, 3, lambda k, v: 'fire,ground' in k), firstX=10)
