@@ -39,6 +39,7 @@ def task_BestTypeCombs(tc, weights0):
 
 def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values())), multiProcessing=False):
     cache = f"{TASK_BESTTYPECOMBS_CACHE}_{n}.json"
+    cache2 = f"{TASK_BESTTYPECOMBS_CACHE}_{n}_o.json"
     if os.path.isfile(cache):
         LOGGER.log("cache exists, loading data from cache...")
         with open(cache, 'r') as load:
@@ -53,8 +54,11 @@ def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(a
         distance = distancer(weights0, weights1)
         LOGGER.log(f"iteration {i}, distance = {distance}")
         if distance < 0.01:
+            weights1_o = dict(sorted(weights1.items(), key=lambda item: item[1], reverse=True))
             with open(cache, 'w') as save:
                 json.dump(weights1, save, indent=4)
+            with open(cache2, 'w') as save2:
+                json.dump(weights1_o, save2, indent=4)
             return weights1
         weights0 = weights1.copy()
 
@@ -152,18 +156,22 @@ def task_BestTeamTypeCombs2(tcs):
 def BestTeamTypeCombs(n, m, multiProcessing=True):
     handler = task_BestTeamTypeCombs2
     cache = f"{TASK_BESTTEAMTYPECOMBS_CACHE}_{n}_{m}_v{handler.__name__[-1]}.json"
+    cache2 = f"{TASK_BESTTEAMTYPECOMBS_CACHE}_{n}_{m}_v{handler.__name__[-1]}_o.json"
     if os.path.isfile(cache):
         LOGGER.log("cache exists, loading data from cache...")
         with open(cache, 'r') as load:
             return json.load(load)
     res = dict(team_looper(n, m, handler, multiProcessing=multiProcessing))
+    res_o = dict(sorted(res.items(), key=lambda item: item[1], reverse=True))
     with open(cache, 'w') as save:
         json.dump(res, save, indent=4)
+    with open(cache2, 'w') as save2:
+        json.dump(res_o, save2, indent=4)
     return res
 
-def BestTeamTypeCombs_f(n, m, filter):
+def BestTeamTypeCombs_f(n, m, predicate):
     table = BestTeamTypeCombs(n, m)
-    table = {k: v for k, v in table.items() if filter(k, v)}
+    table = {k: v for k, v in table.items() if predicate(k, v)}
     return table
 
 def task_TypeCombsThatResistsEverything(tcs):
@@ -188,3 +196,4 @@ def gen_task_results():
 if __name__ == '__main__':
     gen_task_results()
     printDict(BestTeamTypeCombs_f(2, 3, lambda k, v: 'fire,ground' in k), firstX=10)
+    printDict(BestTeamTypeCombs_f(2, 3, lambda k, v: 'ground,water' in k), firstX=10)
