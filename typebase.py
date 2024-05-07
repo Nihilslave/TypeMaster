@@ -116,17 +116,23 @@ class TypeComb:
     def immuneto(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) <= -4)
     def supeffto(self, t: Union[str, Type, 'TypeComb']):
-        return any(t.weakto(_) for _ in self.typelist)
+        return any(TypeComb(t).weakto(_) for _ in self.typelist)
     def resistedby(self, t: Union[str, Type, 'TypeComb']):
-        return all(t.resists(_) for _ in self.typelist)
+        return all(TypeComb(t).resists(_) for _ in self.typelist)
     def ineffagainst(self, t: Union[str, Type, 'TypeComb']):
-        return all(t.immuneto(_) for _ in self.typelist)
+        return all(TypeComb(t).immuneto(_) for _ in self.typelist)
     def weaknesses(self):
         return [t for t in TYPES if self.weakto(t)]
     def resistances(self):
         return [t for t in TYPES if self.resists(t)]
     def immunities(self):
         return [t for t in TYPES if self.immuneto(t)]
+    def coverage(self):
+        return {
+            'super effective to': ','.join(t for t in TYPES if self.supeffto(t)),
+            'resisted by': ','.join(t for t in TYPES if self.resistedby(t)),
+            'immuned by': ','.join(t for t in TYPES if self.ineffagainst(t)),
+        }
     def defoutclassedby(self, t: Union[str, Type, 'TypeComb']):
         t = TypeComb(t)
         for _ in TYPES:
