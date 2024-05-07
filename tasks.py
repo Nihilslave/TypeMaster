@@ -5,55 +5,47 @@ from tools import *
 
 TASK_BESTTYPECOMBS_CACHE = 'typecombrank'
 TASK_OUTCLASSEDTABLE_CACHE = 'outclassedtable'
+TASK_BESTTEAMTYPECOMBS_CACHE = 'teamtypecombrank'
 
-def task_BestTypeCombs(
-        n,
-        normalizer=None, # TODO: have something here
-        distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values()))
-        ):
+def task_BestTypeCombs(tc, weights0):
+    tc1 = TypeComb(tc)
+    weight = 0
+    for tc2 in weights0:
+        tc2 = TypeComb(tc2)
+        id2 = tc2.ID
+        coeff_def = tc1.getcoeff(tc2)
+        if coeff_def < -2:
+            weight += 4 * weights0[id2]
+        if coeff_def == -2:
+            weight += 3 * weights0[id2]
+        if coeff_def == -1:
+            weight += 2 * weights0[id2]
+        if coeff_def == 1:
+            weight -= 2 * weights0[id2]
+        if coeff_def == 2:
+            weight -= 4 * weights0[id2]
+        coeff_off = tc2.getcoeff(tc1)
+        if coeff_off < -2:
+            weight -= 3 * weights0[id2]
+        if coeff_off == -2:
+            weight -= 2 * weights0[id2]
+        if coeff_off == -1:
+            weight -= 1.5 * weights0[id2]
+        if coeff_off == 1:
+            weight += 1.5 * weights0[id2]
+        if coeff_off == 2:
+            weight += 2 * weights0[id2]
+    return tc1.ID, weight
+
+def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values())), multiProcessing=False):
     cache = f"{TASK_BESTTYPECOMBS_CACHE}_{n}.json"
     if os.path.isfile(cache):
         LOGGER.log("cache exists, loading data from cache...")
         with open(cache, 'r') as load:
             return json.load(load)
-    weights0 = {}
-    weights1 = {}
-    # initialize weights
-    for typeComb in TYPECOMBS(n):
-        typeComb = TypeComb(typeComb)
-        weights0[typeComb.ID] = 1
-        weights1[typeComb.ID] = 0
+    weights0 = {TypeComb(tc).ID: 1 for tc in TYPECOMBS(n)}
     for i in range(1000):
-        # calc new weight
-        for typeComb1 in TYPECOMBS(n):
-            typeComb1 = TypeComb(typeComb1)
-            id1 = typeComb1.ID
-            for typeComb2 in TYPECOMBS(n):
-                typeComb2 = TypeComb(typeComb2)
-                id2 = typeComb2.ID
-                coeff_def = typeComb1.getcoeff(typeComb2)
-                if coeff_def < -2:
-                    weights1[id1] += 4 * weights0[id2]
-                if coeff_def == -2:
-                    weights1[id1] += 3 * weights0[id2]
-                if coeff_def == -1:
-                    weights1[id1] += 2 * weights0[id2]
-                if coeff_def == 1:
-                    weights1[id1] -= 2 * weights0[id2]
-                if coeff_def == 2:
-                    weights1[id1] -= 4 * weights0[id2]
-                coeff_off = typeComb2.getcoeff(typeComb1)
-                if coeff_off < -2:
-                    weights1[id1] -= 3 * weights0[id2]
-                if coeff_off == -2:
-                    weights1[id1] -= 2 * weights0[id2]
-                if coeff_off == -1:
-                    weights1[id1] -= 1.5 * weights0[id2]
-                if coeff_off == 1:
-                    weights1[id1] += 1.5 * weights0[id2]
-                if coeff_off == 2:
-                    weights1[id1] += 2 * weights0[id2]
-        # normalize new weight
+        weights1 = dict(typecomb_looper(n, task_BestTypeCombs, weights0, multiProcessing=multiProcessing))
         weights1_min = min(weights1.values())
         weights1 = {k: (v - weights1_min) for k, v in weights1.items()}
         weights1_mul = len(weights1) / sum(weights1.values())
@@ -64,12 +56,9 @@ def task_BestTypeCombs(
             with open(cache, 'w') as save:
                 json.dump(weights1, save, indent=4)
             return weights1
-        # prepare for the next iteration
-        for key in weights0.keys():
-            weights0[key] = weights1[key]
-            weights1[key] = 0
+        weights0 = weights1.copy()
 
-TYPECOMB_WEIGHTS = task_BestTypeCombs(2)
+TYPECOMB_WEIGHTS = BestTypeCombs(2)
 
 def task_BestType(n, goodCombOnly=False):
     weights: dict[str, float] = task_BestTypeCombs(n)
@@ -110,7 +99,7 @@ def task_OutclassedTable(category, n):
         json.dump(res, save, indent=4)
     return res
 
-def task_BestTeamTypeCombs(tcs):
+def task_BestTeamTypeCombs1(tcs):
     team = Team()
     for tc in tcs:
         team.add(tc)
@@ -161,7 +150,16 @@ def task_BestTeamTypeCombs2(tcs):
     return team.ID, res
 
 def BestTeamTypeCombs(n, m, multiProcessing=True):
-    return dict(team_looper(n, m, task_BestTeamTypeCombs2, multiProcessing=multiProcessing))
+    handler = task_BestTeamTypeCombs2
+    cache = f"{TASK_BESTTEAMTYPECOMBS_CACHE}_{n}_{m}_v{handler.__name__[-1]}.json"
+    if os.path.isfile(cache):
+        LOGGER.log("cache exists, loading data from cache...")
+        with open(cache, 'r') as load:
+            return json.load(load)
+    res = dict(team_looper(n, m, handler, multiProcessing=multiProcessing))
+    with open(cache, 'w') as save:
+        json.dump(res, save, indent=4)
+    return res
 
 def task_TypeCombsThatResistsEverything(tcs):
     team = Team()
@@ -177,14 +175,10 @@ def TypeCombsThatResistsEverything(n, m, multiProcessing=True):
     return [_[0] for _ in res if _[1]]
 
 def gen_task_results():
-    task_BestTypeCombs(2)
+    BestTypeCombs(2)
     task_OutclassedTable('def', 2)
     task_OutclassedTable('off', 2)
+    BestTeamTypeCombs(2, 3)
 
 if __name__ == '__main__':
     gen_task_results()
-    tmp = TypeCombsThatResistsEverything(2, 3)
-    with open('tmp.json', 'r') as t:
-        table = json.load(t)
-    table = {k: v for k, v in table.items() if k in tmp}
-    printDict(table, firstX=10)
