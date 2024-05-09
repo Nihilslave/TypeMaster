@@ -1,5 +1,6 @@
 import types
 import itertools
+from math import inf
 from typing import Union
 import time
 import multiprocessing
@@ -32,7 +33,7 @@ class Type:
     def resists(self, t: Union[str, 'Type']):
         return (self.getcoeff(t) == -1)
     def immuneto(self, t: Union[str, 'Type']):
-        return (self.getcoeff(t) == -64)
+        return (self.getcoeff(t) == -inf)
     def supeffto(self, t: Union[str, 'Type']):
         return Type(t).weakto(self)
     def resistedby(self, t: Union[str, 'Type']):
@@ -112,9 +113,9 @@ class TypeComb:
     def weakto(self, t: Union[str, Type, 'TypeComb']):
         return (self.getcoeff(t) > 0)
     def resists(self, t: Union[str, Type, 'TypeComb']):
-        return (self.getcoeff(t) < 0 and self.getcoeff(t) > -4)
+        return (self.getcoeff(t) < 0 and self.getcoeff(t) != -inf)
     def immuneto(self, t: Union[str, Type, 'TypeComb']):
-        return (self.getcoeff(t) <= -4)
+        return (self.getcoeff(t) == -inf)
     def supeffto(self, t: Union[str, Type, 'TypeComb']):
         return any(TypeComb(t).weakto(_) for _ in self.typelist)
     def resistedby(self, t: Union[str, Type, 'TypeComb']):
@@ -165,12 +166,14 @@ class Team:
         return self
     def getcoeff(self, t: Union[str, Type, TypeComb]):
         return min(tc.getcoeff(t) for tc in self.tclist)
+    def getcoeffs(self, t: Union[str, Type, TypeComb]):
+        return sorted(tc.getcoeff(t) for tc in self.tclist)
     def weakto(self, t: Union[str, Type, TypeComb]):
         return (self.getcoeff(t) > 0)
     def resists(self, t: Union[str, Type, TypeComb]):
-        return (self.getcoeff(t) < 0 and self.getcoeff(t) > -4)
+        return (self.getcoeff(t) < 0 and self.getcoeff(t) != -inf)
     def immuneto(self, t: Union[str, Type, TypeComb]):
-        return (self.getcoeff(t) <= -4)
+        return (self.getcoeff(t) == -inf)
     def supeffto(self, t: Union[str, Type, TypeComb]):
         return any(tc.supeffto(t) for tc in self.tclist)
     def resistedby(self, t: Union[str, Type, TypeComb]):

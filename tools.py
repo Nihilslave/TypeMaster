@@ -25,6 +25,7 @@ def printDict(d: dict, sortByValues=True, reverse=True, firstX=-1):
         print(f"{i + 1}. {key}: {value}")
 
 def typechart(n, typeComb, hideDetailsAbove=None):
+    # TODO currently we don't need this, but fix the -64 and -4 thing oneday
     typeComb = TypeComb(typeComb)
     res1 = {}
     res2: dict[tuple, list] = {}
