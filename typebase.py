@@ -1,6 +1,6 @@
-import types
 import itertools
 from math import inf
+from types import MappingProxyType
 from typing import Union
 import time
 import multiprocessing
@@ -65,7 +65,7 @@ PSYCHIC = Type('psychic')
 ROCK = Type('rock')
 STEEL = Type('steel')
 WATER = Type('water')
-TYPES = types.MappingProxyType(Type.TYPES)
+TYPES = MappingProxyType(Type.TYPES)
 def TYPECOMBS(n):
     return itertools.combinations_with_replacement(TYPES, n)
 def __timer(func):
