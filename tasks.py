@@ -99,6 +99,7 @@ def task_OutclassedTable(category, n):
                     continue
                 if tc1.offoutclassedby(n, tc2):
                     res[tc1.ID].append(tc2.ID)
+    res = {k: v for k, v in res.items() if v}
     with open(cache, 'w') as save:
         json.dump(res, save, indent=4)
     return res
