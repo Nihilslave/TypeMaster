@@ -20,7 +20,13 @@ class Type:
         return cls.TYPES[t]
     @staticmethod
     def typechart():
-        pass # TODO: print typechart
+        buf = 'def\\off\t' + '\t'.join(Type.TYPES.keys()).replace('electric', 'electrc').replace('fighting', 'fightng') + '\n'
+        for t, T in Type.TYPES.items():
+            buf += t.replace('electric', 'electrc').replace('fighting', 'fightng')
+            for tt in Type.TYPES:
+                buf += '\t' + str(T.chart.get(tt)).replace('inf', '')
+            buf += '\n'
+        print(buf)
     @staticmethod
     def toID(t: Union[str, 'Type']):
         if isinstance(t, Type):
@@ -195,32 +201,4 @@ def team_looper(n, m, task, *args, multiProcessing=False):
     return result
 
 if __name__ == '__main__':
-    print(TypeComb([DRAGON, FAIRY]).weaknesses())
-    print(TypeComb([DRAGON, FAIRY]).resistances())
-    print(TypeComb([DRAGON, FAIRY]).immunities())
-    print(TypeComb([DRAGON, STEEL]).weaknesses())
-    print(TypeComb([DRAGON, STEEL]).resistances())
-    print(TypeComb([DRAGON, STEEL]).immunities())
-    print(TypeComb([FLYING, STEEL]).weaknesses())
-    print(TypeComb([FLYING, STEEL]).resistances())
-    print(TypeComb([FLYING, STEEL]).immunities())
-    teams = [
-        Team().add([DRAGON, FAIRY]).add([DRAGON, STEEL]).add([FLYING, STEEL]),
-        # Team().add([DARK, STEEL]).add([DRAGON, FAIRY]).add([FLYING, STEEL]),
-        # Team().add([DRAGON, FAIRY]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
-        # Team().add([DRAGON, FAIRY]).add([GHOST, WATER]).add([NORMAL, STEEL]),
-        # Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([FIRE, FLYING]),
-        # Team().add([DARK, STEEL]).add([DRAGON, GHOST]).add([FLYING, STEEL]),
-        # Team().add([DRAGON, GHOST]).add([FIRE, FLYING]).add([NORMAL, STEEL]),
-        # Team().add([DRAGON, FAIRY]).add([FLYING, WATER]).add([NORMAL, STEEL]),
-        # Team().add([DRAGON, FAIRY]).add([FLYING, STEEL]).add([NORMAL, STEEL]),
-        # Team().add([DRAGON, FAIRY]).add([ELECTRIC, STEEL]).add([GHOST, WATER]),
-        # Team().add([DARK, DRAGON]).add([FLYING, WATER]).add([GHOST, STEEL]),
-    ]
-    for i, team in enumerate(teams):
-        print(f"{i + 1}. {team.ID} weakto:")
-        for tc in TYPECOMBS(2):
-            tc = TypeComb(tc)
-            coeff = team.getcoeff(tc)
-            if coeff > 0:
-                print(f"{tc.ID}: {coeff}")
+    Type.typechart()
