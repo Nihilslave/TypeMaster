@@ -3,7 +3,30 @@ import json
 
 from tools import *
 
+def __cache(cacheName, cacheArgsMapper, saveOrdered=True):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            kwargs = {k: v for k, v in kwargs.items() if k != 'multiProcessing'}
+            cacheArgs = cacheArgsMapper(*args, **kwargs)
+            cache = f"results/{cacheName}_{cacheArgs}.json"
+            cache_o = f"results/ordered/{cacheName}_{cacheArgs}.json"
+            if os.path.isfile(cache):
+                LOGGER.log("cache exists, loading data from cache...")
+                with open(cache, 'r') as load:
+                    return json.load(load)
+            res: dict = func(*args, **kwargs)
+            with open(cache, 'w') as save:
+                json.dump(res, save, indent=4)
+            if saveOrdered:
+                res_o = dict(sorted(res.items(), key=lambda item: item[1], reverse=True))
+                with open(cache_o, 'w') as save_o:
+                    json.dump(res_o, save_o, indent=4)
+            return res
+        return wrapper
+    return decorator
+
 TASK_BESTTYPECOMBS_CACHE = 'typecombrank'
+TASK_BESTTYPE_CACHE = 'typerank'
 TASK_OUTCLASSEDTABLE_CACHE = 'outclassedtable'
 TASK_BESTTEAMTYPECOMBS_CACHE = 'teamtypecombrank'
 
@@ -37,13 +60,8 @@ def task_BestTypeCombs(tc, weights0):
             weight += 2 * weights0[id2]
     return tc1.ID, weight
 
+@__cache(TASK_BESTTYPECOMBS_CACHE, lambda n, *args, **kwargs: str(n))
 def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values())), multiProcessing=False):
-    cache = f"{TASK_BESTTYPECOMBS_CACHE}_{n}.json"
-    cache2 = f"{TASK_BESTTYPECOMBS_CACHE}_{n}_o.json"
-    if os.path.isfile(cache):
-        LOGGER.log("cache exists, loading data from cache...")
-        with open(cache, 'r') as load:
-            return json.load(load)
     weights0 = {TypeComb(tc).ID: 1 for tc in TYPECOMBS(n)}
     for i in range(1000):
         weights1 = dict(typecomb_looper(n, task_BestTypeCombs, weights0, multiProcessing=multiProcessing))
@@ -54,18 +72,14 @@ def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(a
         distance = distancer(weights0, weights1)
         LOGGER.log(f"iteration {i}, distance = {distance}")
         if distance < 0.01:
-            weights1_o = dict(sorted(weights1.items(), key=lambda item: item[1], reverse=True))
-            with open(cache, 'w') as save:
-                json.dump(weights1, save, indent=4)
-            with open(cache2, 'w') as save2:
-                json.dump(weights1_o, save2, indent=4)
             return weights1
         weights0 = weights1.copy()
 
 TYPECOMB_WEIGHTS = BestTypeCombs(2)
 
-def task_BestType(n, goodCombOnly=False):
-    weights: dict[str, float] = task_BestTypeCombs(n)
+@__cache(TASK_BESTTYPE_CACHE, lambda n, goodCombOnly=False: str(n) + ("_g" if goodCombOnly else ""))
+def BestType(n, goodCombOnly=False):
+    weights: dict[str, float] = BestTypeCombs(n)
     res = {}
     for t in TYPES:
         res[t] = 0
@@ -75,33 +89,6 @@ def task_BestType(n, goodCombOnly=False):
         tt = tc.split(',')
         for t in tt:
             res[t] += w
-    return res
-
-def task_OutclassedTable(category, n):
-    cache = f"{TASK_OUTCLASSEDTABLE_CACHE}_{category}_{n}.json"
-    if os.path.isfile(cache):
-        LOGGER.log("cache exists, loading data from cache...")
-        with open(cache, 'r') as load:
-            return json.load(load)
-    res: dict[str, list] = {}
-    for tc1 in TYPECOMBS(n):
-        tc1 = TypeComb(tc1)
-        res[tc1.ID] = []
-        for tc2 in TYPECOMBS(n):
-            tc2 = TypeComb(tc2)
-            if tc2.ID == tc1.ID:
-                continue
-            if category == 'def':
-                if tc1.defoutclassedby(tc2):
-                    res[tc1.ID].append(tc2.ID)
-            if category == 'off':
-                if tc1.size == 1 and tc1.ID in tc2.ID.split(','):
-                    continue
-                if tc1.offoutclassedby(n, tc2):
-                    res[tc1.ID].append(tc2.ID)
-    res = {k: v for k, v in res.items() if v}
-    with open(cache, 'w') as save:
-        json.dump(res, save, indent=4)
     return res
 
 def task_BestTeamTypeCombs1(tcs):
@@ -154,26 +141,35 @@ def task_BestTeamTypeCombs2(tcs):
             res += 4 * weight
     return team.ID, res
 
-def BestTeamTypeCombs(n, m, multiProcessing=True):
-    handler = task_BestTeamTypeCombs2
-    cache = f"{TASK_BESTTEAMTYPECOMBS_CACHE}_{n}_{m}_v{handler.__name__[-1]}.json"
-    cache2 = f"{TASK_BESTTEAMTYPECOMBS_CACHE}_{n}_{m}_v{handler.__name__[-1]}_o.json"
-    if os.path.isfile(cache):
-        LOGGER.log("cache exists, loading data from cache...")
-        with open(cache, 'r') as load:
-            return json.load(load)
-    res = dict(team_looper(n, m, handler, multiProcessing=multiProcessing))
-    res_o = dict(sorted(res.items(), key=lambda item: item[1], reverse=True))
-    with open(cache, 'w') as save:
-        json.dump(res, save, indent=4)
-    with open(cache2, 'w') as save2:
-        json.dump(res_o, save2, indent=4)
-    return res
+@__cache(TASK_BESTTEAMTYPECOMBS_CACHE, lambda n, m, handler=task_BestTeamTypeCombs2: f"{n}_{m}_v{handler.__name__[-1]}")
+def BestTeamTypeCombs(n, m, handler=task_BestTeamTypeCombs2, multiProcessing=True):
+    return dict(team_looper(n, m, handler, multiProcessing=multiProcessing))
 
 def BestTeamTypeCombs_f(n, m, predicate):
     table = BestTeamTypeCombs(n, m)
     table = {k: v for k, v in table.items() if predicate(k, v)}
     return table
+
+@__cache(TASK_OUTCLASSEDTABLE_CACHE, lambda category, n: f"{category}_{n}", saveOrdered=False)
+def task_OutclassedTable(category, n):
+    res: dict[str, list] = {}
+    for tc1 in TYPECOMBS(n):
+        tc1 = TypeComb(tc1)
+        res[tc1.ID] = []
+        for tc2 in TYPECOMBS(n):
+            tc2 = TypeComb(tc2)
+            if tc2.ID == tc1.ID:
+                continue
+            if category == 'def':
+                if tc1.defoutclassedby(tc2):
+                    res[tc1.ID].append(tc2.ID)
+            if category == 'off':
+                if tc1.size == 1 and tc1.ID in tc2.ID.split(','):
+                    continue
+                if tc1.offoutclassedby(n, tc2):
+                    res[tc1.ID].append(tc2.ID)
+    res = {k: v for k, v in res.items() if v}
+    return res
 
 def task_TypeCombsThatResistsEverything(tcs):
     team = Team()
@@ -190,9 +186,11 @@ def TypeCombsThatResistsEverything(n, m, multiProcessing=True):
 
 def gen_task_results():
     BestTypeCombs(2)
+    BestType(2, goodCombOnly=False)
+    BestType(2, goodCombOnly=True)
+    BestTeamTypeCombs(2, 3)
     task_OutclassedTable('def', 2)
     task_OutclassedTable('off', 2)
-    BestTeamTypeCombs(2, 3)
 
 if __name__ == '__main__':
     gen_task_results()
