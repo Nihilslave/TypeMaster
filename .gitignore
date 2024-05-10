@@ -1,4 +1,5 @@
-results/*
+results/*.json
+results/ordered/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
