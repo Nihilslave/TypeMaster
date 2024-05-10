@@ -27,8 +27,8 @@ def __cache(cacheName, cacheArgsMapper, saveOrdered=True):
 
 TASK_BESTTYPECOMBS_CACHE = 'typecombrank'
 TASK_BESTTYPE_CACHE = 'typerank'
-TASK_OUTCLASSEDTABLE_CACHE = 'outclassedtable'
 TASK_BESTTEAMTYPECOMBS_CACHE = 'teamtypecombrank'
+TASK_OUTCLASSEDTABLE_CACHE = 'outclassedtable'
 
 def task_BestTypeCombs(tc, weights0):
     tc1 = TypeComb(tc)
