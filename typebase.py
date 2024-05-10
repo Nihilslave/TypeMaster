@@ -128,12 +128,22 @@ class TypeComb:
         return all(TypeComb(t).resists(_) for _ in self.typelist)
     def ineffagainst(self, t: Union[str, Type, 'TypeComb']):
         return all(TypeComb(t).immuneto(_) for _ in self.typelist)
+    @property
     def weaknesses(self):
         return [t for t in TYPES if self.weakto(t)]
+    @property
     def resistances(self):
         return [t for t in TYPES if self.resists(t)]
+    @property
     def immunities(self):
         return [t for t in TYPES if self.immuneto(t)]
+    @property
+    def weaktable(self):
+        return {
+            'weaknesses': ','.join(self.weaknesses),
+            'resistances': ','.join(self.resistances),
+            'immunities': ','.join(self.immunities),
+        }
     def coverage(self):
         return {
             'super effective to': ','.join(t for t in TYPES if self.supeffto(t)),

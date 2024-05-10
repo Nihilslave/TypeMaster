@@ -194,4 +194,4 @@ def gen_task_results():
 
 if __name__ == '__main__':
     gen_task_results()
-    printDict(BestTeamTypeCombs_f(2, 3, lambda k, v: 'ground,water' in k), firstX=10)
+    printDict(BestTeamTypeCombs_f(2, 3, lambda k, v: 'dragon,steel' not in k and 'flying,steel' not in k), firstX=10)
