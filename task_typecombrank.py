@@ -97,7 +97,6 @@ class postprocessors:
     def get(version):
         return postprocessors._postprocessors[version - 1]
 
-
 @cache('typecombrank', lambda n, version=2, **kwargs: f"{n}_v{version}")
 def BestTypeCombs(n, version=2, multiProcessing=False):
     weights0 = {}
@@ -130,5 +129,7 @@ def BestType(n, BestTypeCombsVersion=2):
     return res
 
 if __name__ == '__main__':
-    printDict(BestTypeCombs(2))
+    printDict(BestTypeCombs(2, version=1))
+    printDict(BestTypeCombs(2, version=2))
     printDict(BestType(2, BestTypeCombsVersion=1))
+    printDict(BestType(2, BestTypeCombsVersion=2))
