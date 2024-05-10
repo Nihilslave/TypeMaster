@@ -1,29 +1,8 @@
 import os
 import json
 
-from tools import *
-
-def __cache(cacheName, cacheArgsMapper, saveOrdered=True):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            kwargs = {k: v for k, v in kwargs.items() if k != 'multiProcessing'}
-            cacheArgs = cacheArgsMapper(*args, **kwargs)
-            cache = f"results/{cacheName}_{cacheArgs}.json"
-            cache_o = f"results/ordered/{cacheName}_{cacheArgs}.json"
-            if os.path.isfile(cache):
-                LOGGER.log("cache exists, loading data from cache...")
-                with open(cache, 'r') as load:
-                    return json.load(load)
-            res: dict = func(*args, **kwargs)
-            with open(cache, 'w') as save:
-                json.dump(res, save, indent=4)
-            if saveOrdered:
-                res_o = dict(sorted(res.items(), key=lambda item: item[1], reverse=True))
-                with open(cache_o, 'w') as save_o:
-                    json.dump(res_o, save_o, indent=4)
-            return res
-        return wrapper
-    return decorator
+from typebase import *
+from utils import *
 
 def task_BestTypeCombs(tc, weights0):
     tc1 = TypeComb(tc)
@@ -55,7 +34,7 @@ def task_BestTypeCombs(tc, weights0):
             weight += 2 * weights0[id2]
     return tc1.ID, weight
 
-@__cache('typecombrank', lambda n, *args, **kwargs: str(n))
+@cache('typecombrank', lambda n, *args, **kwargs: str(n))
 def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(abs(w0 - w1) for w0, w1 in zip(weights0.values(), weights1.values())), multiProcessing=False):
     weights0 = {TypeComb(tc).ID: 1 for tc in TYPECOMBS(n)}
     for i in range(1000):
@@ -72,7 +51,7 @@ def BestTypeCombs(n, normalizer=None, distancer=lambda weights0, weights1: sum(a
 
 TYPECOMB_WEIGHTS = BestTypeCombs(2)
 
-@__cache('typerank', lambda n, goodCombOnly=False: str(n) + ("_g" if goodCombOnly else ""))
+@cache('typerank', lambda n, goodCombOnly=False: str(n) + ("_g" if goodCombOnly else ""))
 def BestType(n, goodCombOnly=False):
     weights: dict[str, float] = BestTypeCombs(n)
     res = {}
@@ -136,7 +115,7 @@ def task_BestTeamTypeCombs2(tcs):
             res += 4 * weight
     return team.ID, res
 
-@__cache('teamtypecombrank', lambda n, m, handler=task_BestTeamTypeCombs2: f"{n}_{m}_v{handler.__name__[-1]}")
+@cache('teamtypecombrank', lambda n, m, handler=task_BestTeamTypeCombs2: f"{n}_{m}_v{handler.__name__[-1]}")
 def BestTeamTypeCombs(n, m, handler=task_BestTeamTypeCombs2, multiProcessing=True):
     return dict(team_looper(n, m, handler, multiProcessing=multiProcessing))
 
@@ -145,7 +124,7 @@ def BestTeamTypeCombs_f(n, m, predicate):
     table = {k: v for k, v in table.items() if predicate(k, v)}
     return table
 
-@__cache('outclassedtable', lambda category, n: f"{category}_{n}", saveOrdered=False)
+@cache('outclassedtable', lambda category, n: f"{category}_{n}", saveOrdered=False)
 def task_OutclassedTable(category, n):
     res: dict[str, list] = {}
     for tc1 in TYPECOMBS(n):
