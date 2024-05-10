@@ -128,24 +128,24 @@ def BestType(n, BestTypeCombsVersion=2):
             res[t] += w
     return res
 
-def Best3rdMove(first, second):
+def BestNthMove(*others):
     weights = BestTypeCombs(2, version=2)
     res = {}
-    for third in TYPES:
-        res[third] = 0
-        tc1 = TypeComb((first, second, third))
+    for nth in TYPES:
+        res[nth] = 0
+        tc1 = TypeComb((*others, nth))
         for tc2 in weights:
             coeff = TypeComb(tc2).getcoeff(tc1)
             if coeff < -2:
-                res[third] -= 3 * weights[tc2][2]
+                res[nth] -= 3 * weights[tc2][2]
             if coeff == -2:
-                res[third] -= 2 * weights[tc2][2]
+                res[nth] -= 2 * weights[tc2][2]
             if coeff == -1:
-                res[third] -= 1.5 * weights[tc2][2]
+                res[nth] -= 1.5 * weights[tc2][2]
             if coeff == 1:
-                res[third] += 1.5 * weights[tc2][2]
+                res[nth] += 1.5 * weights[tc2][2]
             if coeff == 2:
-                res[third] += 2 * weights[tc2][2]
+                res[nth] += 2 * weights[tc2][2]
     return res
 
 def tasks():
@@ -155,4 +155,4 @@ def tasks():
     printDict(BestType(2, BestTypeCombsVersion=2))
 
 if __name__ == '__main__':
-    printDict(Best3rdMove(FAIRY, FIGHTING))
+    printDict(BestNthMove(GROUND, ICE, ROCK))
