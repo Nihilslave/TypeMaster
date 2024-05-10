@@ -1,6 +1,3 @@
-import os
-import json
-
 from typebase import *
 from utils import *
 
