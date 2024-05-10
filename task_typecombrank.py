@@ -2,7 +2,7 @@ from typebase import *
 from utils import *
 
 class handlers:
-    def handler_BestTypeCombs1(tc, weights0):
+    def handler1(tc, weights0):
         tc1 = TypeComb(tc)
         weight = 0
         for tc2 in weights0:
@@ -31,7 +31,7 @@ class handlers:
             if coeff_off == 2:
                 weight += 2 * weights0[id2]
         return tc1.ID, weight
-    def handler_BestTypeCombs2(tc, weights0):
+    def handler2(tc, weights0):
         tc1 = TypeComb(tc)
         weight_def, weight_off = 0, 0
         for tc2 in weights0:
@@ -60,7 +60,7 @@ class handlers:
             if coeff_off == 2:
                 weight_off += 2 * weights0[id2][0]
         return tc1.ID, (weight_def, weight_off)
-    _handlers = [handler_BestTypeCombs1, handler_BestTypeCombs2]
+    _handlers = [handler1, handler2]
     def get(version):
         return handlers._handlers[version - 1]
 class normalizers:
@@ -71,11 +71,11 @@ class normalizers:
         weights = {k: (v * weights_mul) for k, v in weights.items()}
         return weights
     def normalizer2(weights: dict):
-        weights_min_def = min(v[0] for v in weights.values())
-        weights_min_off = min(v[1] for v in weights.values())
-        weights_max_def = max(v[0] for v in weights.values())
-        weights_max_off = max(v[1] for v in weights.values())
-        weights = {k: ((v[0] - weights_min_def) / (weights_max_def - weights_min_def), (v[1] - weights_min_off) / (weights_max_off - weights_min_off)) for k, v in weights.items()}
+        weights_def: dict = normalizers.normalizer1({k: v[0] for k, v in weights.items()})
+        weights_off: dict = normalizers.normalizer1({k: v[1] for k, v in weights.items()})
+        weights = {}
+        for k, v in weights_def.items():
+            weights[k] = (v, weights_off[k])
         return weights
     _normalizers = [normalizer1, normalizer2]
     def get(version):
@@ -91,8 +91,8 @@ class distancers:
 class postprocessors:
     def postprocessor1(res):
         return res
-    def postprocessor2(res):
-        pass
+    def postprocessor2(res: dict):
+        return {k: (v[0]*v[0] + v[1]*v[1], v[0] + v[1], v[0], v[1]) for k, v in res.items()}
     _postprocessors = [postprocessor1, postprocessor2]
     def get(version):
         return postprocessors._postprocessors[version - 1]
@@ -111,8 +111,24 @@ def BestTypeCombs(n, version=2, multiProcessing=False):
         distance = distancers.get(version)(weights0, weights1)
         LOGGER.log(f"iteration {i}, distance = {distance}")
         if distance < 0.01:
+            weights1 = postprocessors.get(version)(weights1)
             return weights1
         weights0 = weights1.copy()
 
+@cache('typerank', lambda n, BestTypeCombsVersion=2: f"{n}_v{BestTypeCombsVersion}")
+def BestType(n, BestTypeCombsVersion=2):
+    weights: dict[str, any] = BestTypeCombs(n, version=BestTypeCombsVersion)
+    res = {}
+    for t in TYPES:
+        res[t] = 0
+    for tc, w in weights.items():
+        if BestTypeCombsVersion == 2:
+            w = w[0]
+        tt = tc.split(',')
+        for t in tt:
+            res[t] += w
+    return res
+
 if __name__ == '__main__':
     printDict(BestTypeCombs(2))
+    printDict(BestType(2, BestTypeCombsVersion=1))
